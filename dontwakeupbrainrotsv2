@@ -1,0 +1,159 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local rootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Variável para armazenar a velocidade original
+local originalWalkSpeed = humanoid.WalkSpeed
+
+-- Função para teleportar para cima do mapa
+local function teleportAboveMap()
+    -- Verifica se o personagem existe
+    if not character or not rootPart then
+        warn("Personagem não encontrado!")
+        return
+    end
+    
+    -- Pega a posição atual do personagem
+    local currentPosition = rootPart.Position
+    
+    -- Calcula a posição acima do mapa (mantém X e Z, aumenta Y)
+    local teleportPosition = Vector3.new(currentPosition.X, currentPosition.Y + 200, currentPosition.Z)
+    
+    -- Efeito visual antes do teleporte
+    local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    
+    -- Efeito de fade out
+    local fadeOutTween = TweenService:Create(rootPart, tweenInfo, {
+        Transparency = 0.8
+    })
+    
+    fadeOutTween:Play()
+    wait(0.3)
+    
+    -- Teleporta para cima do mapa
+    rootPart.CFrame = CFrame.new(teleportPosition)
+    
+    -- Efeito visual após o teleporte
+    rootPart.Transparency = 1
+    local fadeInTween = TweenService:Create(rootPart, tweenInfo, {
+        Transparency = 0
+    })
+    
+    fadeInTween:Play()
+    
+    print("Teleportado para cima do mapa!")
+end
+
+-- Função para definir WalkSpeed para 150
+local function setWalkSpeed150()
+    if not character or not humanoid then
+        warn("Personagem não encontrado!")
+        return
+    end
+    
+    humanoid.WalkSpeed = 150
+    print("WalkSpeed definido para 150!")
+end
+
+-- Função para restaurar WalkSpeed original
+local function resetWalkSpeed()
+    if not character or not humanoid then
+        warn("Personagem não encontrado!")
+        return
+    end
+    
+    humanoid.WalkSpeed = originalWalkSpeed
+    print("WalkSpeed restaurado para " .. originalWalkSpeed .. "!")
+end
+
+-- Cria a GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "TeleportGui"
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Frame principal
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 220, 0, 110)
+frame.Position = UDim2.new(0, 10, 0, 10)
+frame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+frame.BorderSizePixel = 0
+frame.Parent = screenGui
+
+-- Adiciona cantos arredondados
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 8)
+corner.Parent = frame
+
+-- Botão de Teleporte
+local teleportButton = Instance.new("TextButton")
+teleportButton.Size = UDim2.new(1, -10, 0, 45)
+teleportButton.Position = UDim2.new(0, 5, 0, 5)
+teleportButton.BackgroundColor3 = Color3.new(0.2, 0.5, 0.8)
+teleportButton.BorderSizePixel = 0
+teleportButton.Text = "�� Teleportar para Cima"
+teleportButton.TextColor3 = Color3.new(1, 1, 1)
+teleportButton.TextScaled = true
+teleportButton.Font = Enum.Font.GothamBold
+teleportButton.Parent = frame
+
+-- Adiciona cantos arredondados ao botão de teleporte
+local teleportButtonCorner = Instance.new("UICorner")
+teleportButtonCorner.CornerRadius = UDim.new(0, 6)
+teleportButtonCorner.Parent = teleportButton
+
+-- Botão de WalkSpeed
+local speedButton = Instance.new("TextButton")
+speedButton.Size = UDim2.new(1, -10, 0, 45)
+speedButton.Position = UDim2.new(0, 5, 0, 55)
+speedButton.BackgroundColor3 = Color3.new(0.8, 0.5, 0.2)
+speedButton.BorderSizePixel = 0
+speedButton.Text = "⚡ Velocidade 150"
+speedButton.TextColor3 = Color3.new(1, 1, 1)
+speedButton.TextScaled = true
+speedButton.Font = Enum.Font.GothamBold
+speedButton.Parent = frame
+
+-- Adiciona cantos arredondados ao botão de velocidade
+local speedButtonCorner = Instance.new("UICorner")
+speedButtonCorner.CornerRadius = UDim.new(0, 6)
+speedButtonCorner.Parent = speedButton
+
+-- Efeito hover para botão de teleporte
+teleportButton.MouseEnter:Connect(function()
+    teleportButton.BackgroundColor3 = Color3.new(0.3, 0.6, 0.9)
+end)
+
+teleportButton.MouseLeave:Connect(function()
+    teleportButton.BackgroundColor3 = Color3.new(0.2, 0.5, 0.8)
+end)
+
+-- Efeito hover para botão de velocidade
+speedButton.MouseEnter:Connect(function()
+    speedButton.BackgroundColor3 = Color3.new(0.9, 0.6, 0.3)
+end)
+
+speedButton.MouseLeave:Connect(function()
+    speedButton.BackgroundColor3 = Color3.new(0.8, 0.5, 0.2)
+end)
+
+-- Conecta as funções aos botões
+teleportButton.MouseButton1Click:Connect(teleportAboveMap)
+speedButton.MouseButton1Click:Connect(setWalkSpeed150)
+
+-- Atalhos de teclado
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == Enum.KeyCode.U then
+        teleportAboveMap()
+    elseif input.KeyCode == Enum.KeyCode.J then
+        setWalkSpeed150()
+    elseif input.KeyCode == Enum.KeyCode.K then
+        resetWalkSpeed()
+    end
+end)
